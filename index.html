@@ -393,6 +393,65 @@
 </head>
 <body>
 
+<!-- AUTH GATE -->
+<div id="authGate" style="display:none;position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#0f3460);display:flex;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:20px;padding:40px 32px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.4);text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px;">🔐</div>
+    <h2 style="font-size:22px;font-weight:800;color:#1a1a2e;margin-bottom:4px;">RTO Onboarding Portal</h2>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:24px;">Enter your credentials to continue</p>
+    <div id="authError" style="display:none;background:#fee2e2;color:#dc2626;border-radius:8px;padding:10px;font-size:13px;margin-bottom:16px;">Incorrect username or password.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;text-align:left;">
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">Username</label>
+        <input id="authUser" type="text" autocomplete="username" placeholder="Enter username" style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">Password</label>
+        <input id="authPass" type="password" autocomplete="current-password" placeholder="Enter password" style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;">
+      </div>
+      <button onclick="checkAuth()" style="background:linear-gradient(135deg,#D31A2B,#f5735d);color:#fff;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;">Sign In →</button>
+    </div>
+  </div>
+</div>
+
+<div id="mainContent" style="display:none;">
+
+<script>
+(function() {
+  const VALID_USER = 'rto-onboarding';
+  const VALID_PASS = 'raytanorg';
+  const SESSION_KEY = 'rto_auth';
+
+  function checkAuth() {
+    const u = document.getElementById('authUser').value;
+    const p = document.getElementById('authPass').value;
+    if (u === VALID_USER && p === VALID_PASS) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      document.getElementById('authGate').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+    } else {
+      document.getElementById('authError').style.display = 'block';
+    }
+  }
+  window.checkAuth = checkAuth;
+
+  // Allow Enter key to submit
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && document.getElementById('authGate').style.display !== 'none') {
+      checkAuth();
+    }
+  });
+
+  // Check session on load
+  if (sessionStorage.getItem(SESSION_KEY) === '1') {
+    document.getElementById('authGate').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+  } else {
+    document.getElementById('authGate').style.display = 'flex';
+  }
+})();
+</script>
+
 <!-- TOP NAV -->
 <nav class="topnav">
   <div class="topnav-brand">
@@ -1746,5 +1805,6 @@ async function downloadFile(key) {
   }
 }
 </script>
+</div><!-- /mainContent -->
 </body>
 </html>
