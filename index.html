@@ -463,7 +463,6 @@
     <a class="nav-link" href="#postrnf">Post-RNF</a>
     <a class="nav-link" href="#overview">Checklist</a>
     <a class="nav-link" href="#forms">Forms</a>
-    <a class="nav-link" href="#certupload">Cert Upload</a>
     <a class="nav-link" href="#contacts">Contacts</a>
   </div>
 </nav>
@@ -541,7 +540,7 @@
   <div class="section-header">
     <span class="section-tag" style="background:rgba(245,166,35,.15);color:#92400e;">PHASE 1 — PRE-RNF</span>
     <h2>Before Your RNF — Candidate Journey</h2>
-    <p>Complete all steps below <strong>before</strong> your RNF is issued. This covers exam preparation, system setup, FSC application, and the mandatory FTS Programme.</p>
+    <p>Complete all steps below <strong>before</strong> your RNF is issued. This covers exam preparation, system setup, FSC application, certificate upload, and the mandatory FTS Programme.</p>
   </div>
 
   <!-- ROLE LEGEND -->
@@ -933,6 +932,50 @@
           <div class="alert-box alert-info">ℹ️ FTS eModules can be started on iLearn while awaiting your classroom training date. Check the iLearn dashboard under <strong>"My Training Journeys"</strong>.</div>
         </div>
         <button class="expand-btn" onclick="togglePhase(this.previousElementSibling.previousElementSibling)">Show steps <span class="chevron">▾</span></button>
+      </div>
+    </div>
+
+    <!-- PHASE G: Upload CMFAS Certificates -->
+    <div class="phase-block" id="certupload">
+      <div class="phase-left"><div class="phase-num">G</div></div>
+      <div class="phase-body">
+        <div class="phase-header" onclick="togglePhase(this)">
+          <span class="phase-icon">📄</span>
+          <span class="phase-title">Upload CMFAS Certificates <span class="tag-badge tag-must">MANDATORY</span></span>
+          <span class="phase-badge candidate">CANDIDATE</span>
+          <span class="chevron">▾</span>
+        </div>
+        <p class="phase-desc">After passing all 4 CMFAS papers, upload your results here so your leader can verify them and proceed with the FSC application.</p>
+        <div class="phase-detail">
+          <div style="background:var(--aia-white);border-radius:14px;padding:24px;border:1.5px solid var(--aia-border);">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+              <div style="font-size:24px;">📄</div>
+              <div>
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:2px;">CMFAS Certificate Upload</h3>
+                <p style="font-size:13px;color:var(--aia-grey);">Complete this only after passing all 4 CMFAS papers.</p>
+              </div>
+            </div>
+            <form id="certForm" style="display:flex;flex-direction:column;gap:16px;">
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <label style="font-size:13px;font-weight:600;">Your Full Name <span style="color:var(--aia-red);">*</span></label>
+                <input type="text" name="certName" required placeholder="As per NRIC" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);outline:none;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <label style="font-size:13px;font-weight:600;">Upload Certificates <span style="color:var(--aia-red);">*</span></label>
+                <p style="font-size:12px;color:var(--aia-grey);margin-bottom:4px;">Select multiple files at once if needed (PDF or image). One file per paper is fine.</p>
+                <input type="file" name="certs" multiple accept=".pdf,.jpg,.jpeg,.png" required id="certFileInput" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <label style="font-size:13px;font-weight:600;">Notes <span style="color:var(--aia-grey);font-weight:400;">(optional)</span></label>
+                <textarea name="certNotes" rows="2" placeholder="e.g. all 4 papers completed, sitting HI re-sit on 20 Oct" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);resize:vertical;outline:none;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'"></textarea>
+              </div>
+              <div id="certMsg" style="display:none;padding:12px 16px;border-radius:8px;font-size:14px;font-weight:600;"></div>
+              <button type="submit" id="certSubmitBtn" style="background:var(--aia-red);color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">Upload Certificates →</button>
+            </form>
+          </div>
+          <div class="alert-box alert-info" style="margin-top:12px;">ℹ️ Your leader will be notified once you submit. They will verify your results and proceed with your FSC application (Phase D).</div>
+        </div>
+        <button class="expand-btn" onclick="togglePhase(this.previousElementSibling.previousElementSibling)">Show upload form <span class="chevron">▾</span></button>
       </div>
     </div>
 
@@ -1597,45 +1640,6 @@
         <li style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--aia-red);font-weight:700;">→</span><span><strong>M9A</strong> — Life Insurance</span></li>
         <li style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--aia-red);font-weight:700;">→</span><span><strong>HI</strong> — Health Insurance</span></li>
       </ul>
-    </div>
-  </div>
-</section>
-
-<!-- CERT UPLOAD -->
-<section class="section" id="certupload" style="background:var(--aia-light);padding-top:48px;padding-bottom:48px;">
-  <div class="section-header">
-    <span class="section-tag">AFTER YOUR CMFAS PAPERS</span>
-    <h2>Upload Your Certificates</h2>
-    <p>Once you have passed all 4 CMFAS papers (M9, M9A, RES5, HI), upload your results here so your leader can verify and proceed with your FSC application.</p>
-  </div>
-  <div style="max-width:680px;margin:0 auto;">
-    <div style="background:var(--aia-white);border-radius:16px;padding:32px;border:1.5px solid var(--aia-border);box-shadow:var(--shadow);">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-        <div style="font-size:28px;">📄</div>
-        <div>
-          <h3 style="font-size:18px;font-weight:700;margin-bottom:2px;">CMFAS Certificate Upload</h3>
-          <p style="font-size:13px;color:var(--aia-grey);">Complete this only after passing all 4 CMFAS papers.</p>
-        </div>
-      </div>
-      <form id="certForm" style="display:flex;flex-direction:column;gap:16px;">
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <label style="font-size:13px;font-weight:600;">Your Full Name <span style="color:var(--aia-red);">*</span></label>
-          <input type="text" name="certName" required placeholder="As per NRIC" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);outline:none;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'">
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <label style="font-size:13px;font-weight:600;">Upload Certificates <span style="color:var(--aia-red);">*</span></label>
-          <p style="font-size:12px;color:var(--aia-grey);margin-bottom:4px;">Select multiple files at once if needed (PDF or image). One file per paper is fine.</p>
-          <input type="file" name="certs" multiple accept=".pdf,.jpg,.jpeg,.png" required id="certFileInput" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);">
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <label style="font-size:13px;font-weight:600;">Notes <span style="color:var(--aia-grey);font-weight:400;">(optional)</span></label>
-          <textarea name="certNotes" rows="2" placeholder="e.g. all 4 papers completed, sitting HI re-sit on 20 Oct" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);resize:vertical;outline:none;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'"></textarea>
-        </div>
-        <div id="certMsg" style="display:none;padding:12px 16px;border-radius:8px;font-size:14px;font-weight:600;"></div>
-        <button type="submit" id="certSubmitBtn" style="background:var(--aia-red);color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-          Upload Certificates →
-        </button>
-      </form>
     </div>
   </div>
 </section>
