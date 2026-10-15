@@ -1,23 +1,22 @@
-export const config = { matcher: ['/((?!_next).*)'] };
+export const config = {
+  matcher: '/:path*',
+};
 
-export default function middleware(req) {
-  const auth = req.headers.get('authorization');
+export default function middleware(request) {
+  const basicAuth = request.headers.get('authorization');
 
-  if (auth) {
-    const [scheme, encoded] = auth.split(' ');
-    if (scheme === 'Basic' && encoded) {
-      const decoded = atob(encoded);
-      const [user, pass] = decoded.split(':');
-      if (user === 'rto-onboarding' && pass === 'raytanorg') {
-        return new Response(null, { status: 200 });
-      }
+  if (basicAuth) {
+    const authValue = basicAuth.split(' ')[1];
+    const [user, pwd] = atob(authValue).split(':');
+    if (user === 'rto-onboarding' && pwd === 'raytanorg') {
+      return new Response(null, { status: 200 });
     }
   }
 
-  return new Response('Unauthorised', {
+  return new Response('Authentication required', {
     status: 401,
     headers: {
-      'WWW-Authenticate': 'Basic realm="RTO Onboarding Portal", charset="UTF-8"',
+      'WWW-Authenticate': 'Basic realm="Secure Area"',
     },
   });
 }
