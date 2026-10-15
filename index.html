@@ -1587,17 +1587,15 @@ async function submitToFormSubmit(payload, msgId, btnId, successText, resetForm)
   const btn = document.getElementById(btnId);
   btn.disabled = true; btn.textContent = 'Submitting…';
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    // Use GET with payload as query param — works cross-origin with Apps Script
+    const url = GAS_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+    const res = await fetch(url, { method: 'GET' });
     const json = await res.json();
     if (json.ok) {
       showMsg(msgId, true, successText);
       if (resetForm) resetForm.reset();
     } else {
-      showMsg(msgId, false, '❌ Submission failed. Please try again or contact your leader directly.');
+      showMsg(msgId, false, '❌ Submission failed: ' + (json.message || 'unknown error'));
     }
   } catch(err) {
     showMsg(msgId, false, '❌ Submission failed. Please try again or contact your leader directly.');
