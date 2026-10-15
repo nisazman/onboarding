@@ -42,6 +42,14 @@
     --aia-dark: #f9fafb;
   }
 
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 480px) {
+    .grid-2col { grid-template-columns: 1fr; gap: 12px; }
+  }
   .dl-btn {
     display: inline-flex; align-items: center; gap: 8px;
     background: var(--aia-red); color: #fff;
@@ -429,7 +437,7 @@
         </div>
       </div>
       <form id="detailsForm" style="display:flex;flex-direction:column;gap:16px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="grid-2col">
           <div style="display:flex;flex-direction:column;gap:6px;">
             <label style="font-size:13px;font-weight:600;">Full Name <span style="color:var(--aia-red);">*</span></label>
             <input type="text" name="fullName" required placeholder="As per NRIC" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);outline:none;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'">
@@ -439,7 +447,7 @@
             <input type="text" name="preferredName" required placeholder="What you go by" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);outline:none;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'">
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="grid-2col">
           <div style="display:flex;flex-direction:column;gap:6px;">
             <label style="font-size:13px;font-weight:600;">NRIC (Last 4 characters) <span style="color:var(--aia-red);">*</span></label>
             <input type="text" name="nric" required placeholder="e.g. 567A" maxlength="4" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);outline:none;text-transform:uppercase;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'">
@@ -605,7 +613,7 @@
           <div style="background:var(--aia-light);border:1.5px solid var(--aia-orange);border-radius:12px;padding:18px 20px;margin:12px 0 8px;">
             <div class="irecruit-flow-title" style="margin-bottom:12px;">📋 Submit Exam Booking Details to Your Leader</div>
             <form id="sciBookingForm" style="display:flex;flex-direction:column;gap:12px;">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="grid-2col" style="gap:12px;">
                 <div>
                   <label style="font-size:12px;font-weight:600;color:var(--aia-grey);display:block;margin-bottom:4px;">Full Name *</label>
                   <input name="sciFullName" required placeholder="As per NRIC" style="width:100%;padding:9px 12px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-white);color:var(--aia-dark);">
@@ -635,7 +643,7 @@
                   </label>
                 </div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="grid-2col" style="gap:12px;">
                 <div>
                   <label style="font-size:12px;font-weight:600;color:var(--aia-grey);display:block;margin-bottom:4px;">Preferred Exam Date *</label>
                   <input type="date" name="examDate" required style="width:100%;padding:9px 12px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-white);color:var(--aia-dark);">
