@@ -14,13 +14,36 @@ function doOptions(e) {
     .setMimeType(ContentService.MimeType.TEXT);
 }
 
-// ── GET (health check) ───────────────────────────────────────
+// ── GET ──────────────────────────────────────────────────────
+// Handles both ?payload= form submissions AND JSONP dashboard
+// calls (?payload=…&callback=fn or payload containing callback).
 function doGet(e) {
-  // Also handle form submissions via GET (query string fallback)
   if (e && e.parameter && e.parameter.payload) {
     try {
       var body = JSON.parse(decodeURIComponent(e.parameter.payload));
-      return route(body);
+
+      // JSONP callback support for dashboard (bypasses CORS)
+      var cb = body.callback || e.parameter.callback || null;
+
+      if (body.type === 'dashboard') {
+        var result = getDashboard(body.leader || '');
+        if (cb) {
+          // Return as JSONP so the browser <script> tag can read it
+          return ContentService
+            .createTextOutput(cb + '(' + JSON.stringify(result) + ');')
+            .setMimeType(ContentService.MimeType.JAVASCRIPT);
+        }
+        return respondJson(result);
+      }
+
+      var routeResult = route(body);
+      if (cb) {
+        return ContentService
+          .createTextOutput(cb + '(' + routeResult.getContent() + ');')
+          .setMimeType(ContentService.MimeType.JAVASCRIPT);
+      }
+      return routeResult;
+
     } catch(err) {
       return respond(false, 'Parse error: ' + err.message);
     }
@@ -51,18 +74,20 @@ function route(body) {
 // ── 1. Candidate Details ─────────────────────────────────────
 function handleDetails(data) {
   var sheet = getOrCreateSheet('Candidate Details',
-    ['Timestamp','Full Name','Preferred Name','NRIC (last 4)','Mobile','Personal Email']);
+    ['Timestamp','Leader','Full Name','Preferred Name','NRIC (last 4)','Mobile','Personal Email']);
   sheet.appendRow([
     data.timestamp || now(),
+    data.leader || '',
     data.fullName || '', data.preferredName || '',
     data.nric || '', data.mobile || '', data.email || ''
   ]);
   sendEmail('🆕 New FSC Candidate — ' + (data.fullName || ''),
-    'Name: '        + data.fullName +
-    '\nPreferred: ' + data.preferredName +
-    '\nMobile: '    + data.mobile +
-    '\nEmail: '     + data.email +
-    '\nSubmitted: ' + data.timestamp +
+    'Leader: '     + (data.leader || '—') +
+    '\nName: '     + data.fullName +
+    '\nPreferred: '+ data.preferredName +
+    '\nMobile: '   + data.mobile +
+    '\nEmail: '    + data.email +
+    '\nSubmitted: '+ data.timestamp +
     '\n\n' + sheetLink());
   return respond(true, 'Details saved.');
 }
@@ -113,6 +138,73 @@ function handleFormUpload(data, sheetName, subject) {
   return respond(true, 'Submission saved.');
 }
 
+// ── 5. Leader Dashboard ──────────────────────────────────────
+// Returns all rows from Candidate Details, Cert Uploads,
+// Namecard Submissions and Office Pass Submissions
+// filtered by the given leader name.
+function getDashboard(leader) {
+  if (!leader) return { ok: false, message: 'No leader specified.' };
+
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+
+  // ── Read Candidate Details (leader in col B, name in col C)
+  var detailsSheet = ss.getSheetByName('Candidate Details');
+  var candidates = {};  // keyed by Full Name
+  if (detailsSheet && detailsSheet.getLastRow() > 1) {
+    var dData = detailsSheet.getRange(2, 1, detailsSheet.getLastRow() - 1, 7).getValues();
+    dData.forEach(function(row) {
+      // [Timestamp, Leader, Full Name, Preferred Name, NRIC, Mobile, Email]
+      if ((row[1] || '').toString().toLowerCase() === leader.toLowerCase()) {
+        var name = row[2] || '';
+        if (name) {
+          candidates[name] = {
+            name: name,
+            preferred: row[3] || '',
+            mobile: row[5] || '',
+            email: row[6] || '',
+            certs: 'No',
+            namecard: 'No',
+            officepass: 'No'
+          };
+        }
+      }
+    });
+  }
+
+  // ── Cert Uploads (col B = Full Name)
+  var certSheet = ss.getSheetByName('Cert Uploads');
+  if (certSheet && certSheet.getLastRow() > 1) {
+    var cData = certSheet.getRange(2, 1, certSheet.getLastRow() - 1, 2).getValues();
+    cData.forEach(function(row) {
+      var name = (row[1] || '').toString();
+      if (candidates[name]) candidates[name].certs = 'Yes';
+    });
+  }
+
+  // ── Namecard Submissions (col B = Full Name)
+  var ncSheet = ss.getSheetByName('Namecard Submissions');
+  if (ncSheet && ncSheet.getLastRow() > 1) {
+    var ncData = ncSheet.getRange(2, 1, ncSheet.getLastRow() - 1, 2).getValues();
+    ncData.forEach(function(row) {
+      var name = (row[1] || '').toString();
+      if (candidates[name]) candidates[name].namecard = 'Yes';
+    });
+  }
+
+  // ── Office Pass Submissions (col B = Full Name)
+  var opSheet = ss.getSheetByName('Office Pass Submissions');
+  if (opSheet && opSheet.getLastRow() > 1) {
+    var opData = opSheet.getRange(2, 1, opSheet.getLastRow() - 1, 2).getValues();
+    opData.forEach(function(row) {
+      var name = (row[1] || '').toString();
+      if (candidates[name]) candidates[name].officepass = 'Yes';
+    });
+  }
+
+  var rows = Object.values(candidates);
+  return { ok: true, leader: leader, rows: rows };
+}
+
 // ── Helpers ──────────────────────────────────────────────────
 function getOrCreateSheet(name, headers) {
   var ss    = SpreadsheetApp.openById(SHEET_ID);
@@ -138,8 +230,13 @@ function now() {
 }
 
 function respond(ok, message) {
-  var output = ContentService
+  return ContentService
     .createTextOutput(JSON.stringify({ ok: ok, message: message }))
     .setMimeType(ContentService.MimeType.JSON);
-  return output;
+}
+
+function respondJson(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
 }
