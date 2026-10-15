@@ -1199,9 +1199,11 @@
         <p style="font-size:13px;font-weight:600;margin-bottom:10px;">📤 Submit Completed Namecard</p>
         <form id="namecardForm" style="display:flex;flex-direction:column;gap:10px;">
           <input type="text" name="namecardName" required placeholder="Your full name (as per NRIC)" style="padding:9px 12px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);outline:none;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'">
-          <input type="file" name="namecardFile" accept=".xlsx,.pdf,.jpg,.jpeg,.png" required id="namecardFileInput" style="padding:9px 12px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);">
+          <div style="background:#fff8ec;border:1.5px solid var(--aia-orange);border-radius:8px;padding:10px 14px;font-size:13px;color:#92400e;">
+            📁 After clicking submit, a Google Drive folder will open — upload your completed namecard file there.
+          </div>
           <div id="namecardMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;"></div>
-          <button type="submit" id="namecardSubmitBtn" style="background:var(--aia-red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Upload Namecard →</button>
+          <button type="submit" id="namecardSubmitBtn" style="background:var(--aia-red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Submit &amp; Upload Namecard →</button>
         </form>
       </div>
     </div>
@@ -1229,9 +1231,11 @@
         <p style="font-size:13px;font-weight:600;margin-bottom:10px;">📤 Submit Signed Office Pass Form</p>
         <form id="officepassForm" style="display:flex;flex-direction:column;gap:10px;">
           <input type="text" name="officepassName" required placeholder="Your full name (as per NRIC)" style="padding:9px 12px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);outline:none;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'">
-          <input type="file" name="officepassFile" accept=".pdf,.jpg,.jpeg,.png" required id="officepassFileInput" style="padding:9px 12px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);">
+          <div style="background:#fff8ec;border:1.5px solid var(--aia-orange);border-radius:8px;padding:10px 14px;font-size:13px;color:#92400e;">
+            📁 After clicking submit, a Google Drive folder will open — upload your signed office pass form there.
+          </div>
           <div id="officepassMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;"></div>
-          <button type="submit" id="officepassSubmitBtn" style="background:var(--aia-red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Upload Signed Form →</button>
+          <button type="submit" id="officepassSubmitBtn" style="background:var(--aia-red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Submit &amp; Upload Signed Form →</button>
         </form>
       </div>
     </div>
@@ -1638,7 +1642,7 @@ document.getElementById('certForm').addEventListener('submit', async function(e)
 
 document.getElementById('namecardForm').addEventListener('submit', async function(e) {
   e.preventDefault();
-  document.getElementById('namecardSubmitBtn').dataset.label = 'Upload Namecard →';
+  document.getElementById('namecardSubmitBtn').dataset.label = 'Submit & Upload Namecard →';
   const fd = new FormData(this);
   await submitToFormSubmit({
     type: 'namecard',
@@ -1646,7 +1650,9 @@ document.getElementById('namecardForm').addEventListener('submit', async functio
     files: [],
     timestamp: new Date().toLocaleString('en-SG', {timeZone:'Asia/Singapore'})
   }, 'namecardMsg', 'namecardSubmitBtn',
-  '✅ Notification sent! Please also WhatsApp or email the completed namecard file directly to your leader.', this);
+  '✅ Leader notified! The Drive folder is opening — please upload your namecard file there.', this);
+  // Open Drive folder for file upload
+  window.open('https://drive.google.com/drive/folders/1EzdR53aiExr7y4vgeWqECSW8sAiIsQiu', '_blank');
 });
 
 document.getElementById('sciBookingForm').addEventListener('submit', async function(e) {
@@ -1678,7 +1684,7 @@ document.getElementById('sciBookingForm').addEventListener('submit', async funct
 
 document.getElementById('officepassForm').addEventListener('submit', async function(e) {
   e.preventDefault();
-  document.getElementById('officepassSubmitBtn').dataset.label = 'Upload Signed Form →';
+  document.getElementById('officepassSubmitBtn').dataset.label = 'Submit & Upload Signed Form →';
   const fd = new FormData(this);
   await submitToFormSubmit({
     type: 'officepass',
@@ -1686,7 +1692,9 @@ document.getElementById('officepassForm').addEventListener('submit', async funct
     files: [],
     timestamp: new Date().toLocaleString('en-SG', {timeZone:'Asia/Singapore'})
   }, 'officepassMsg', 'officepassSubmitBtn',
-  '✅ Notification sent! Please also WhatsApp or email the signed form directly to your leader.', this);
+  '✅ Leader notified! The Drive folder is opening — please upload your signed form there.', this);
+  // Open Drive folder for file upload
+  window.open('https://drive.google.com/drive/folders/11UCDVpt6esMYtc5dJakRzd5oz80-6xB9', '_blank');
 });
 
 // File data for downloads
