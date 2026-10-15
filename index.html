@@ -1586,19 +1586,21 @@ function showMsg(elId, success, text) {
 async function submitToFormSubmit(payload, msgId, btnId, successText, resetForm) {
   const btn = document.getElementById(btnId);
   btn.disabled = true; btn.textContent = 'Submitting…';
+  const url = GAS_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+  // Use no-cors fetch — Apps Script redirects cause opaque responses
+  // We assume success after 4s if no network error
+  let timedOut = false;
+  const timeout = new Promise(resolve => setTimeout(() => { timedOut = true; resolve('timeout'); }, 5000));
   try {
-    // Use GET with payload as query param — works cross-origin with Apps Script
-    const url = GAS_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
-    const res = await fetch(url, { method: 'GET' });
-    const json = await res.json();
-    if (json.ok) {
-      showMsg(msgId, true, successText);
-      if (resetForm) resetForm.reset();
-    } else {
-      showMsg(msgId, false, '❌ Submission failed: ' + (json.message || 'unknown error'));
-    }
+    await Promise.race([
+      fetch(url, { method: 'GET', mode: 'no-cors' }),
+      timeout
+    ]);
+    // With no-cors we can't read the response — assume success
+    showMsg(msgId, true, successText);
+    if (resetForm) resetForm.reset();
   } catch(err) {
-    showMsg(msgId, false, '❌ Submission failed. Please try again or contact your leader directly.');
+    showMsg(msgId, false, '❌ Network error. Please check your connection and try again.');
   }
   btn.disabled = false;
   document.getElementById(btnId).textContent = btn.dataset.label || 'Submit →';
