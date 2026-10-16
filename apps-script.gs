@@ -7,6 +7,12 @@
 const SHEET_ID     = '1d3rUMgf-js7vGikOc9rRXKjW7Jokw59zyqH7gAd8GOQ';
 const NOTIFY_EMAIL = 'nisa.azman@aagroup.sg';
 
+// Leader email lookup — add new leaders here
+const LEADER_EMAILS = {
+  'Ray Tan':    'ray.advisorsalliance@gmail.com',
+  'Lucas Chan': '',  // add when ready
+};
+
 // ── CORS preflight (OPTIONS) ─────────────────────────────────
 function doOptions(e) {
   return ContentService
@@ -74,6 +80,7 @@ function handleDetails(data) {
     data.fullName || '', data.preferredName || '',
     data.nric || '', data.mobile || '', data.email || ''
   ]);
+  var leaderEmail = LEADER_EMAILS[data.leader || ''] || '';
   sendEmail('🆕 New FSC Candidate — ' + (data.fullName || ''),
     'Leader: '     + (data.leader || '—') +
     '\nName: '     + data.fullName +
@@ -81,7 +88,8 @@ function handleDetails(data) {
     '\nMobile: '   + data.mobile +
     '\nEmail: '    + data.email +
     '\nSubmitted: '+ data.timestamp +
-    '\n\n' + sheetLink());
+    '\n\n' + sheetLink(),
+    leaderEmail);
   return respond(true, 'Details saved.');
 }
 
@@ -210,8 +218,10 @@ function getOrCreateSheet(name, headers) {
   return sheet;
 }
 
-function sendEmail(subject, body) {
-  MailApp.sendEmail({ to: NOTIFY_EMAIL, subject: subject, body: body });
+function sendEmail(subject, body, cc) {
+  var opts = { to: NOTIFY_EMAIL, subject: subject, body: body };
+  if (cc) opts.cc = cc;
+  MailApp.sendEmail(opts);
 }
 
 function sheetLink() {
