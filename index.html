@@ -486,8 +486,12 @@ function loadDashboard(leader) {
   const payload = encodeURIComponent(JSON.stringify({ type: 'dashboard', leader: leader }));
   fetch(GAS_URL + '?payload=' + payload)
     .then(function(r) { return r.json(); })
-    .then(function(data) { renderDashboard(data, tbl); })
+    .then(function(data) {
+      console.log('Dashboard data:', JSON.stringify(data));
+      renderDashboard(data, tbl);
+    })
     .catch(function(err) {
+      console.error('Dashboard fetch error:', err);
       tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#f87171;">Could not load data — ' + err.message + '. Check Apps Script is deployed as "Anyone can access".</td></tr>';
     });
 }
