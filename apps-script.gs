@@ -73,22 +73,25 @@ function route(body) {
 // ── 1. Candidate Details ─────────────────────────────────────
 function handleDetails(data) {
   var sheet = getOrCreateSheet('Candidate Details',
-    ['Timestamp','Leader','Full Name','Preferred Name','NRIC (last 4)','Mobile','Personal Email']);
+    ['Timestamp','Leader','Full Name','Preferred Name','NRIC / FIN','Mobile','Personal Email','Mailing Address']);
   sheet.appendRow([
     data.timestamp || now(),
     data.leader || '',
     data.fullName || '', data.preferredName || '',
-    data.nric || '', data.mobile || '', data.email || ''
+    data.nric || '', data.mobile || '', data.email || '',
+    data.mailingAddress || ''
   ]);
   var leaderEmail = LEADER_EMAILS[data.leader || ''] || '';
   var subject = '🆕 New FSC Candidate — ' + (data.fullName || '');
   var body =
-    'Leader: '     + (data.leader || '—') +
-    '\nName: '     + data.fullName +
-    '\nPreferred: '+ data.preferredName +
-    '\nMobile: '   + data.mobile +
-    '\nEmail: '    + data.email +
-    '\nSubmitted: '+ data.timestamp +
+    'Leader: '            + (data.leader || '—') +
+    '\nName: '            + data.fullName +
+    '\nPreferred: '       + data.preferredName +
+    '\nNRIC / FIN: '      + (data.nric || '—') +
+    '\nMobile: '          + data.mobile +
+    '\nEmail: '           + data.email +
+    '\nMailing Address: ' + (data.mailingAddress || '—') +
+    '\nSubmitted: '       + data.timestamp +
     '\n\n' + sheetLink();
 
   Logger.log('Sending to admin: ' + NOTIFY_EMAIL);

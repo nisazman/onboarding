@@ -587,8 +587,8 @@ function esc(s) {
         </div>
         <div class="grid-2col">
           <div style="display:flex;flex-direction:column;gap:6px;">
-            <label style="font-size:13px;font-weight:600;">NRIC (Last 4 characters) <span style="color:var(--aia-red);">*</span></label>
-            <input type="text" name="nric" required placeholder="e.g. 567A" maxlength="4" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);outline:none;text-transform:uppercase;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'">
+            <label style="font-size:13px;font-weight:600;">NRIC / FIN <span style="color:var(--aia-red);">*</span></label>
+            <input type="text" name="nric" required placeholder="e.g. S1234567A" maxlength="9" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);outline:none;text-transform:uppercase;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'">
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;">
             <label style="font-size:13px;font-weight:600;">Mobile Number <span style="color:var(--aia-red);">*</span></label>
@@ -598,6 +598,10 @@ function esc(s) {
         <div style="display:flex;flex-direction:column;gap:6px;">
           <label style="font-size:13px;font-weight:600;">Personal Email <span style="color:var(--aia-red);">*</span></label>
           <input type="email" name="email" required placeholder="your@email.com" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);outline:none;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label style="font-size:13px;font-weight:600;">Mailing Address <span style="color:var(--aia-red);">*</span></label>
+          <input type="text" name="mailingAddress" required placeholder="e.g. Block 123 Ang Mo Kio Ave 6, #05-12, Singapore 560123" style="padding:10px 14px;border:1.5px solid var(--aia-border);border-radius:8px;font-size:14px;background:var(--aia-light);color:var(--aia-dark);outline:none;" onfocus="this.style.borderColor='var(--aia-red)'" onblur="this.style.borderColor='var(--aia-border)'">
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           <label style="font-size:13px;font-weight:600;">Your Leader <span style="color:var(--aia-red);">*</span></label>
@@ -2032,6 +2036,7 @@ document.getElementById('detailsForm').addEventListener('submit', async function
     nric: fd.get('nric') ? fd.get('nric').toUpperCase() : '',
     mobile: fd.get('mobile'),
     email: fd.get('email'),
+    mailingAddress: fd.get('mailingAddress') || '',
     leader: fd.get('leader') || '',
     timestamp: new Date().toLocaleString('en-SG', {timeZone:'Asia/Singapore'})
   }, 'detailsMsg', 'detailsSubmitBtn',
