@@ -541,6 +541,15 @@
   }
 
   window._dashRender = renderDashboard;
+
+  // ── Logout ─────────────────────────────────────────────────
+  function logout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_TYPE_KEY);
+    sessionStorage.removeItem(SESSION_LDR_KEY);
+    location.reload();
+  }
+  window.logout = logout;
 })();
 </script>
 
@@ -557,6 +566,7 @@
     <a class="nav-link" href="#commonforms">Forms</a>
     <a class="nav-link" href="#contacts">Contacts</a>
     <a class="nav-link" href="#leaderDashboard" id="dashNavLink" style="display:none;background:rgba(245,166,35,.18);color:#f5a623;font-weight:700;">📊 Dashboard</a>
+    <button onclick="logout()" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-left:4px;" onmouseover="this.style.background='rgba(255,255,255,.22)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">⏏ Log out</button>
   </div>
 </nav>
 <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
