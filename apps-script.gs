@@ -81,15 +81,27 @@ function handleDetails(data) {
     data.nric || '', data.mobile || '', data.email || ''
   ]);
   var leaderEmail = LEADER_EMAILS[data.leader || ''] || '';
-  sendEmail('🆕 New FSC Candidate — ' + (data.fullName || ''),
+  var subject = '🆕 New FSC Candidate — ' + (data.fullName || '');
+  var body =
     'Leader: '     + (data.leader || '—') +
     '\nName: '     + data.fullName +
     '\nPreferred: '+ data.preferredName +
     '\nMobile: '   + data.mobile +
     '\nEmail: '    + data.email +
     '\nSubmitted: '+ data.timestamp +
-    '\n\n' + sheetLink(),
-    leaderEmail);
+    '\n\n' + sheetLink();
+
+  Logger.log('Sending to admin: ' + NOTIFY_EMAIL);
+  sendEmail(subject, body);
+
+  if (leaderEmail) {
+    Logger.log('Sending to leader: ' + leaderEmail);
+    MailApp.sendEmail({ to: leaderEmail, subject: subject, body: body });
+    Logger.log('Leader email sent successfully.');
+  } else {
+    Logger.log('No leader email found for: ' + (data.leader || '—'));
+  }
+
   return respond(true, 'Details saved.');
 }
 
