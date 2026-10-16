@@ -486,28 +486,33 @@
 
   function loadDashboard(leader) {
     const tbl = document.getElementById('dashTable');
-    tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--aia-grey);">Loading candidates…</td></tr>';
+    tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:rgba(255,255,255,.5);">Loading candidates…</td></tr>';
 
-    const payload = encodeURIComponent(JSON.stringify({ type: 'dashboard', leader: leader }));
-    fetch(GAS_URL + '?payload=' + payload, { method: 'GET', mode: 'no-cors' })
-      .catch(() => {});
+    // Remove any old script tag
+    const old = document.getElementById('dashScript');
+    if (old) old.remove();
 
-    // Since no-cors means we can't read the response, use a 2-second delay then reload via a readable fetch
-    // We use a JSONP-style approach via script tag to bypass CORS
+    // Timeout safety — show error after 12 seconds if no response
+    const timeout = setTimeout(function() {
+      tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#f87171;">Request timed out. Please check your Apps Script deployment and try again.</td></tr>';
+    }, 12000);
+
     const cbName = '_dash_' + Date.now();
     window[cbName] = function(data) {
-      renderDashboard(data, tbl);
+      clearTimeout(timeout);
       delete window[cbName];
       const s = document.getElementById('dashScript');
       if (s) s.remove();
+      renderDashboard(data, tbl);
     };
 
     const script = document.createElement('script');
     script.id = 'dashScript';
-    const p2 = encodeURIComponent(JSON.stringify({ type: 'dashboard', leader: leader, callback: cbName }));
-    script.src = GAS_URL + '?payload=' + p2;
+    const p = encodeURIComponent(JSON.stringify({ type: 'dashboard', leader: leader, callback: cbName }));
+    script.src = GAS_URL + '?payload=' + p;
     script.onerror = function() {
-      tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--aia-grey);">Could not load data. Make sure the Apps Script is redeployed.</td></tr>';
+      clearTimeout(timeout);
+      tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#f87171;">Could not reach Apps Script. Make sure it is deployed as "Anyone can access" and redeployed after the latest code update.</td></tr>';
     };
     document.body.appendChild(script);
   }

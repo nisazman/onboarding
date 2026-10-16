@@ -22,13 +22,12 @@ function doGet(e) {
     try {
       var body = JSON.parse(decodeURIComponent(e.parameter.payload));
 
-      // JSONP callback support for dashboard (bypasses CORS)
-      var cb = body.callback || e.parameter.callback || null;
+      // JSONP callback — comes inside the payload JSON
+      var cb = body.callback || null;
 
       if (body.type === 'dashboard') {
         var result = getDashboard(body.leader || '');
         if (cb) {
-          // Return as JSONP so the browser <script> tag can read it
           return ContentService
             .createTextOutput(cb + '(' + JSON.stringify(result) + ');')
             .setMimeType(ContentService.MimeType.JAVASCRIPT);
@@ -36,13 +35,7 @@ function doGet(e) {
         return respondJson(result);
       }
 
-      var routeResult = route(body);
-      if (cb) {
-        return ContentService
-          .createTextOutput(cb + '(' + routeResult.getContent() + ');')
-          .setMimeType(ContentService.MimeType.JAVASCRIPT);
-      }
-      return routeResult;
+      return route(body);
 
     } catch(err) {
       return respond(false, 'Parse error: ' + err.message);
