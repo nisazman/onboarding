@@ -417,51 +417,58 @@
 <div id="mainContent" style="display:none;">
 
 <script>
+// ── Config ────────────────────────────────────────────────────
+const USERS = [
+  { user: 'rto-onboarding', pass: 'raytanorg',  type: 'candidate', leader: null },
+  { user: 'raytan',         pass: 'hello123',   type: 'leader',    leader: 'Ray Tan' },
+  { user: 'lucaschan',      pass: 'hello123',   type: 'leader',    leader: 'Lucas Chan' },
+];
+const SESSION_KEY      = 'rto_auth';
+const SESSION_TYPE_KEY = 'rto_type';
+const SESSION_LDR_KEY  = 'rto_leader';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzYfL7gleIngbm-0XSBUOB8SL2nwGhwzRRYsv8fKyIV--PjhbvZg8pa15d6XVjqJZwc/exec';
+
+// ── Auth ──────────────────────────────────────────────────────
+function checkAuth() {
+  const u = document.getElementById('authUser').value.trim();
+  const p = document.getElementById('authPass').value;
+  const match = USERS.find(x => x.user === u && x.pass === p);
+  if (match) {
+    sessionStorage.setItem(SESSION_KEY,      '1');
+    sessionStorage.setItem(SESSION_TYPE_KEY, match.type);
+    sessionStorage.setItem(SESSION_LDR_KEY,  match.leader || '');
+    showApp(match.type, match.leader);
+  } else {
+    document.getElementById('authError').style.display = 'block';
+  }
+}
+
+function showApp(type, leader) {
+  document.getElementById('authGate').style.display    = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  if (type === 'leader') {
+    document.getElementById('dashNavLink').style.display = 'inline';
+    document.getElementById('leaderDashboard').style.display = 'block';
+    document.getElementById('dashLeaderName').textContent = leader;
+    loadDashboard(leader);
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(SESSION_TYPE_KEY);
+  sessionStorage.removeItem(SESSION_LDR_KEY);
+  location.reload();
+}
+
+// Allow Enter key on login screen
+document.addEventListener('keydown', function(e) {
+  const gate = document.getElementById('authGate');
+  if (e.key === 'Enter' && gate && gate.style.display !== 'none') checkAuth();
+});
+
+// Check session on load
 (function() {
-  // ── User accounts ──────────────────────────────────────────
-  // type: 'candidate' = standard access
-  // type: 'leader'    = standard access + dashboard for their candidates
-  const USERS = [
-    { user: 'rto-onboarding', pass: 'raytanorg',  type: 'candidate', leader: null },
-    { user: 'raytan',         pass: 'hello123',   type: 'leader',    leader: 'Ray Tan' },
-    { user: 'lucaschan',      pass: 'hello123',   type: 'leader',    leader: 'Lucas Chan' },
-  ];
-
-  const SESSION_KEY      = 'rto_auth';
-  const SESSION_TYPE_KEY = 'rto_type';
-  const SESSION_LDR_KEY  = 'rto_leader';
-
-  function checkAuth() {
-    const u = document.getElementById('authUser').value.trim();
-    const p = document.getElementById('authPass').value;
-    const match = USERS.find(x => x.user === u && x.pass === p);
-    if (match) {
-      sessionStorage.setItem(SESSION_KEY,      '1');
-      sessionStorage.setItem(SESSION_TYPE_KEY, match.type);
-      sessionStorage.setItem(SESSION_LDR_KEY,  match.leader || '');
-      showApp(match.type, match.leader);
-    } else {
-      document.getElementById('authError').style.display = 'block';
-    }
-  }
-  window.checkAuth = checkAuth;
-
-  function showApp(type, leader) {
-    document.getElementById('authGate').style.display    = 'none';
-    document.getElementById('mainContent').style.display = 'block';
-    if (type === 'leader') {
-      initDashboard(leader);
-    }
-  }
-
-  // Allow Enter key
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && document.getElementById('authGate').style.display !== 'none') {
-      checkAuth();
-    }
-  });
-
-  // Check session on load
   if (sessionStorage.getItem(SESSION_KEY) === '1') {
     const type   = sessionStorage.getItem(SESSION_TYPE_KEY) || 'candidate';
     const leader = sessionStorage.getItem(SESSION_LDR_KEY)  || '';
@@ -469,93 +476,48 @@
   } else {
     document.getElementById('authGate').style.display = 'flex';
   }
-
-  // ── Leader Dashboard ───────────────────────────────────────
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzYfL7gleIngbm-0XSBUOB8SL2nwGhwzRRYsv8fKyIV--PjhbvZg8pa15d6XVjqJZwc/exec';
-
-  function initDashboard(leader) {
-    // Show the dashboard nav link and section
-    document.getElementById('dashNavLink').style.display = 'inline';
-    const dash = document.getElementById('leaderDashboard');
-    dash.style.display = 'block';
-    document.getElementById('dashLeaderName').textContent = leader;
-
-    // Fetch data
-    loadDashboard(leader);
-  }
-
-  function loadDashboard(leader) {
-    const tbl = document.getElementById('dashTable');
-    tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:rgba(255,255,255,.5);">Loading candidates…</td></tr>';
-
-    // Remove any old script tag
-    const old = document.getElementById('dashScript');
-    if (old) old.remove();
-
-    // Timeout safety — show error after 12 seconds if no response
-    const timeout = setTimeout(function() {
-      tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#f87171;">Request timed out. Please check your Apps Script deployment and try again.</td></tr>';
-    }, 12000);
-
-    const cbName = '_dash_' + Date.now();
-    window[cbName] = function(data) {
-      clearTimeout(timeout);
-      delete window[cbName];
-      const s = document.getElementById('dashScript');
-      if (s) s.remove();
-      renderDashboard(data, tbl);
-    };
-
-    const script = document.createElement('script');
-    script.id = 'dashScript';
-    const p = encodeURIComponent(JSON.stringify({ type: 'dashboard', leader: leader, callback: cbName }));
-    script.src = GAS_URL + '?payload=' + p;
-    script.onerror = function() {
-      clearTimeout(timeout);
-      tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#f87171;">Could not reach Apps Script. Make sure it is deployed as "Anyone can access" and redeployed after the latest code update.</td></tr>';
-    };
-    document.body.appendChild(script);
-  }
-  window.loadDashboard = loadDashboard;
-
-  function renderDashboard(data, tbl) {
-    if (!data || !data.rows || data.rows.length === 0) {
-      tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--aia-grey);">No candidates registered yet.</td></tr>';
-      return;
-    }
-    tbl.innerHTML = data.rows.map(r => `
-      <tr>
-        <td style="font-weight:600;">${esc(r.name)}</td>
-        <td>${esc(r.preferred)}</td>
-        <td>${esc(r.mobile)}</td>
-        <td>${esc(r.email)}</td>
-        <td>${badge(r.certs)}</td>
-        <td>${badge(r.namecard)}</td>
-        <td>${badge(r.officepass)}</td>
-      </tr>`).join('');
-  }
-
-  function badge(val) {
-    return val === 'Yes'
-      ? '<span style="background:rgba(16,185,129,.15);color:#065f46;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600;">✅ Done</span>'
-      : '<span style="background:rgba(209,213,219,.3);color:var(--aia-grey);padding:2px 10px;border-radius:20px;font-size:12px;">Pending</span>';
-  }
-
-  function esc(s) {
-    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  window._dashRender = renderDashboard;
-
-  // ── Logout ─────────────────────────────────────────────────
-  function logout() {
-    sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(SESSION_TYPE_KEY);
-    sessionStorage.removeItem(SESSION_LDR_KEY);
-    location.reload();
-  }
-  window.logout = logout;
 })();
+
+// ── Dashboard ─────────────────────────────────────────────────
+function loadDashboard(leader) {
+  const tbl = document.getElementById('dashTable');
+  tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:rgba(255,255,255,.5);">Loading candidates…</td></tr>';
+
+  const payload = encodeURIComponent(JSON.stringify({ type: 'dashboard', leader: leader }));
+  fetch(GAS_URL + '?payload=' + payload)
+    .then(function(r) { return r.json(); })
+    .then(function(data) { renderDashboard(data, tbl); })
+    .catch(function(err) {
+      tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#f87171;">Could not load data — ' + err.message + '. Check Apps Script is deployed as "Anyone can access".</td></tr>';
+    });
+}
+
+function renderDashboard(data, tbl) {
+  if (!data || !data.rows || data.rows.length === 0) {
+    tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:rgba(255,255,255,.4);">No candidates registered yet.</td></tr>';
+    return;
+  }
+  tbl.innerHTML = data.rows.map(function(r) { return '<tr>' +
+    '<td style="padding:12px 16px;font-weight:600;color:#fff;">'           + esc(r.name)      + '</td>' +
+    '<td style="padding:12px 16px;color:rgba(255,255,255,.8);">'           + esc(r.preferred) + '</td>' +
+    '<td style="padding:12px 16px;color:rgba(255,255,255,.8);">'           + esc(r.mobile)    + '</td>' +
+    '<td style="padding:12px 16px;color:rgba(255,255,255,.8);">'           + esc(r.email)     + '</td>' +
+    '<td style="padding:12px 16px;text-align:center;">'                    + badge(r.certs)      + '</td>' +
+    '<td style="padding:12px 16px;text-align:center;">'                    + badge(r.namecard)   + '</td>' +
+    '<td style="padding:12px 16px;text-align:center;">'                    + badge(r.officepass) + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function badge(val) {
+  return val === 'Yes'
+    ? '<span style="background:rgba(16,185,129,.25);color:#6ee7b7;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">✅ Done</span>'
+    : '<span style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);padding:3px 10px;border-radius:20px;font-size:12px;">Pending</span>';
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 </script>
 
 <!-- TOP NAV -->
