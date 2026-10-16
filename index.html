@@ -480,90 +480,37 @@ document.addEventListener('keydown', function(e) {
 
 // ── Dashboard ─────────────────────────────────────────────────
 function loadDashboard(leader) {
-  const container = document.getElementById('dashTable');
-  container.innerHTML = '<div style="text-align:center;padding:28px;color:rgba(255,255,255,.5);">Loading candidates…</div>';
+  const tbl = document.getElementById('dashTable');
+  tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:rgba(255,255,255,.5);">Loading candidates…</td></tr>';
+
   const payload = encodeURIComponent(JSON.stringify({ type: 'dashboard', leader: leader }));
   fetch(GAS_URL + '?payload=' + payload)
     .then(function(r) { return r.json(); })
     .then(function(data) {
       console.log('Dashboard data:', JSON.stringify(data));
-      renderDashboard(data, container);
+      renderDashboard(data, tbl);
     })
     .catch(function(err) {
       console.error('Dashboard fetch error:', err);
-      container.innerHTML = '<div style="text-align:center;padding:24px;color:#f87171;">Could not load data — ' + err.message + '. Check Apps Script is deployed as "Anyone can access".</div>';
+      tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#f87171;">Could not load data — ' + err.message + '. Check Apps Script is deployed as "Anyone can access".</td></tr>';
     });
 }
 
-function renderDashboard(data, container) {
+function renderDashboard(data, tbl) {
   if (!data || !data.rows || data.rows.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:32px;color:rgba(255,255,255,.4);">No candidates registered yet.</div>';
+    tbl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:rgba(255,255,255,.4);">No candidates registered yet.</td></tr>';
     return;
   }
-  container.innerHTML = data.rows.map(function(r, i) {
-    var done = [r.certs, r.namecard, r.officepass].filter(function(v){ return v === 'Yes'; }).length;
-    var statusColour = done === 3 ? '#6ee7b7' : done > 0 ? '#fbbf24' : 'rgba(255,255,255,.4)';
-    var statusLabel  = done + '/3 complete';
-    return (
-      '<div style="border:1px solid rgba(255,255,255,.1);border-radius:12px;margin-bottom:10px;overflow:hidden;">' +
-        /* ── header row (always visible) ── */
-        '<div onclick="toggleCandidate(' + i + ')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;background:rgba(255,255,255,.04);user-select:none;" ' +
-             'onmouseover="this.style.background=\'rgba(255,255,255,.08)\'" onmouseout="this.style.background=\'rgba(255,255,255,.04)\'">' +
-          '<div style="display:flex;align-items:center;gap:14px;">' +
-            '<div style="width:36px;height:36px;border-radius:50%;background:rgba(245,166,35,.25);display:flex;align-items:center;justify-content:center;font-weight:700;color:#f5a623;font-size:15px;">' +
-              esc(r.name.charAt(0).toUpperCase()) +
-            '</div>' +
-            '<div>' +
-              '<div style="font-weight:700;color:#fff;font-size:14px;">' + esc(r.name) + (r.preferred ? ' <span style="font-weight:400;color:rgba(255,255,255,.5);font-size:12px;">(' + esc(r.preferred) + ')</span>' : '') + '</div>' +
-              '<div style="font-size:12px;color:' + statusColour + ';margin-top:2px;">' + statusLabel + '</div>' +
-            '</div>' +
-          '</div>' +
-          '<div style="display:flex;align-items:center;gap:10px;">' +
-            miniDot(r.certs,      'Certs') +
-            miniDot(r.namecard,   'Namecard') +
-            miniDot(r.officepass, 'Pass') +
-            '<span id="chevron-' + i + '" style="color:rgba(255,255,255,.4);font-size:18px;margin-left:6px;transition:transform .2s;">▼</span>' +
-          '</div>' +
-        '</div>' +
-        /* ── expandable detail panel ── */
-        '<div id="cand-' + i + '" style="display:none;padding:16px 18px 18px;background:rgba(0,0,0,.15);border-top:1px solid rgba(255,255,255,.07);">' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-bottom:14px;">' +
-            detailItem('📱 Mobile', r.mobile) +
-            detailItem('📧 Email',  r.email) +
-          '</div>' +
-          '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
-            fullBadge(r.certs,      '📎 CMFAS Certs') +
-            fullBadge(r.namecard,   '🪪 Namecard Form') +
-            fullBadge(r.officepass, '🏢 Office Pass Form') +
-          '</div>' +
-        '</div>' +
-      '</div>'
-    );
+  tbl.innerHTML = data.rows.map(function(r) { return '<tr>' +
+    '<td style="padding:12px 16px;font-weight:600;color:#fff;">'           + esc(r.name)      + '</td>' +
+    '<td style="padding:12px 16px;color:rgba(255,255,255,.8);">'           + esc(r.preferred) + '</td>' +
+    '<td style="padding:12px 16px;color:rgba(255,255,255,.8);">'           + esc(r.mobile)    + '</td>' +
+    '<td style="padding:12px 16px;color:rgba(255,255,255,.8);">'           + esc(r.email)     + '</td>' +
+    '<td style="padding:12px 16px;text-align:center;">'                    + badge(r.certs)      + '</td>' +
+    '<td style="padding:12px 16px;text-align:center;">'                    + badge(r.namecard)   + '</td>' +
+    '<td style="padding:12px 16px;text-align:center;">'                    + badge(r.officepass) + '</td>' +
+    '</tr>';
   }).join('');
-}
-
-function toggleCandidate(i) {
-  var panel   = document.getElementById('cand-' + i);
-  var chevron = document.getElementById('chevron-' + i);
-  var isOpen  = panel.style.display !== 'none';
-  panel.style.display   = isOpen ? 'none' : 'block';
-  chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
-}
-
-function miniDot(val, label) {
-  var colour = val === 'Yes' ? '#6ee7b7' : 'rgba(255,255,255,.25)';
-  return '<span title="' + label + '" style="width:10px;height:10px;border-radius:50%;background:' + colour + ';display:inline-block;"></span>';
-}
-
-function detailItem(label, val) {
-  return '<div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:2px;">' + label + '</div>' +
-         '<div style="font-size:13px;color:rgba(255,255,255,.85);">' + (esc(val) || '—') + '</div></div>';
-}
-
-function fullBadge(val, label) {
-  return val === 'Yes'
-    ? '<span style="background:rgba(16,185,129,.2);color:#6ee7b7;border:1px solid rgba(16,185,129,.3);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;">' + label + ' ✅</span>'
-    : '<span style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.1);padding:5px 12px;border-radius:20px;font-size:12px;">' + label + ' · Pending</span>';
 }
 
 function badge(val) {
@@ -1908,8 +1855,25 @@ function esc(s) {
       <button onclick="loadDashboard(sessionStorage.getItem('rto_leader'))" style="background:var(--aia-orange);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">🔄 Refresh</button>
     </div>
 
-    <div id="dashTable">
-      <div style="text-align:center;padding:32px;color:rgba(255,255,255,.4);">Loading…</div>
+    <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden;">
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:rgba(255,255,255,.08);">
+              <th style="padding:14px 16px;text-align:left;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap;">Full Name</th>
+              <th style="padding:14px 16px;text-align:left;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap;">Preferred Name</th>
+              <th style="padding:14px 16px;text-align:left;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap;">Mobile</th>
+              <th style="padding:14px 16px;text-align:left;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap;">Email</th>
+              <th style="padding:14px 16px;text-align:center;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap;">Certs</th>
+              <th style="padding:14px 16px;text-align:center;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap;">Namecard</th>
+              <th style="padding:14px 16px;text-align:center;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap;">Office Pass</th>
+            </tr>
+          </thead>
+          <tbody id="dashTable" style="color:#fff;">
+            <tr><td colspan="7" style="text-align:center;padding:32px;color:rgba(255,255,255,.4);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <p style="color:rgba(255,255,255,.35);font-size:11px;margin-top:16px;text-align:center;">Data is fetched live from the shared Google Sheet. Only visible to your login.</p>
